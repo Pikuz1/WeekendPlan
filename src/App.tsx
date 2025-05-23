@@ -1,21 +1,22 @@
-import './App.css'
-import { auth } from "./firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import { useEffect } from "react";
+import React, { useState } from 'react';
+import CalendarView from './components/CalendarView';
 
 function App() {
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        console.log("Logged in:", user.email);
-      } else {
-        console.log("Not logged in");
-      }
-    });
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-    return () => unsub();
-  }, []);
-
-  return <h1>Weekend Plan App</h1>;
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+      <div className="max-w-md w-full p-6 bg-gray-800 rounded-xl shadow-lg">
+        <h1 className="text-3xl font-bold mb-4 text-center">WeekendPlan</h1>
+        <CalendarView onDateSelect={setSelectedDate} />
+        {selectedDate && (
+          <p className="mt-4 text-center text-green-400">
+            You selected: {selectedDate.toDateString()}
+          </p>
+        )}
+      </div>
+    </div>
+  );
 }
-export default App
+
+export default App;
