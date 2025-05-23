@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
+import React, { useState } from "react";
+import Calendar, { type CalendarProps } from "react-calendar";
+import "react-calendar/dist/Calendar.css";
 
 type Props = {
   onDateSelect: (date: Date) => void;
 };
 
 const CalendarView = ({ onDateSelect }: Props) => {
-  const [date, setDate] = useState(new Date());
+  // Allow date to be null as react-calendar might send null sometimes
+  const [date, setDate] = useState<Date | null>(new Date());
 
-  const handleChange = (value: Date | Date[]) => {
-    if (Array.isArray(value)) return;
+  const handleChange: CalendarProps["onChange"] = (value) => {
+    if (Array.isArray(value)) return; // ignore range for now
+    if (value === null) return; // ignore null
     setDate(value);
     onDateSelect(value);
   };
