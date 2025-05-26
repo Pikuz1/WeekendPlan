@@ -22,8 +22,8 @@ const EventList: React.FC<EventListProps> = ({ onSelectEvent }) => {
           id: doc.id,
           ...data,
           // convert timestamp to string if needed
-          createdAt: data.createdAt?.toDate
-            ? data.createdAt.toDate().toISOString()
+          createdAt: data.createdAt
+            ? data.createdAt
             : data.createdAt || "",
         });
       });

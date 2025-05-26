@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { createEvent } from "../firebaseService";
-import type { EventData } from "../firebase";
+import type { EventData } from "../types";
 
 interface Props {
   userUid: string;

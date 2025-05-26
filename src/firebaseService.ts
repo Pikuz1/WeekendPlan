@@ -12,7 +12,7 @@ import {
   limit,
   getDocs,
 } from "firebase/firestore";
-import type { EventData } from "./firebase";
+import type { EventData } from "./types";
 
 const eventsCollection = collection(db, "events");
 

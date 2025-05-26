@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Calendar, { type CalendarProps } from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 
@@ -22,7 +22,7 @@ const CalendarView = ({ onDateSelect }: Props) => {
         <Calendar
           onChange={handleChange}
           value={date}
-          calendarType="ISO 8601"
+          calendarType="iso8601"
           className="custom-calendar border-0"
           minDetail="month"
           next2Label={null}
