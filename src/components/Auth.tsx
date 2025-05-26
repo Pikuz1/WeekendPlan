@@ -1,17 +1,21 @@
 import { useEffect, useState } from "react";
-import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import {
+  signInWithRedirect,
+  signOut,
+  onAuthStateChanged,
+  getRedirectResult,
+  type User
+} from "firebase/auth";
 import { auth, provider } from "../firebase";
-import type { User } from "firebase/auth";
-
 
 const Auth = () => {
   const [user, setUser] = useState<User | null>(null);
 
   const signIn = async () => {
     try {
-      await signInWithPopup(auth, provider);
+      await signInWithRedirect(auth, provider);
     } catch (error) {
-      console.error("Sign-in error:", error);
+      console.error("Redirect sign-in error:", error);
     }
   };
 
@@ -24,9 +28,21 @@ const Auth = () => {
   };
 
   useEffect(() => {
+    // Handles user state changes
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
     });
+
+    // Handles result after redirect (if any)
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          setUser(result.user);
+        }
+      })
+      .catch((error) => {
+        console.error("Redirect result error:", error);
+      });
 
     return () => unsubscribe();
   }, []);
