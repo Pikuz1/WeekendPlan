@@ -1,6 +1,6 @@
 // src/components/EventList.tsx
 import React, { useEffect, useState } from "react";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../firebase";
 import type { EventData } from "../types";
 
@@ -34,6 +34,18 @@ const EventList: React.FC<EventListProps> = ({ onSelectEvent }) => {
     return () => unsubscribe();
   }, []);
 
+  const handleDelete = async (eventId: string) => {
+    if (!window.confirm("Are you sure you want to delete this event?")) return;
+  
+    try {
+      await deleteDoc(doc(db, "events", eventId));
+      // Optionally, you can show a success message here
+    } catch (error) {
+      console.error("Error deleting event: ", error);
+      alert("Failed to delete event.");
+    }
+  };
+
   if (loading) return <p>Loading events...</p>;
 
   if (events.length === 0) return <p>No events found.</p>;
@@ -59,8 +71,18 @@ const EventList: React.FC<EventListProps> = ({ onSelectEvent }) => {
               </span>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 truncate">
-              Created by: {event.members?.[event.createdBy]?.name || "Unknown"}
+                Created by: {event.members?.[event.createdBy]?.name || "Unknown"}
             </p>
+            <button
+                onClick={(e) => {
+                e.stopPropagation();
+                if (event.id) handleDelete(event.id);
+                }}
+                className="ml-4 text-red-600 hover:text-red-800"
+                aria-label={`Delete event ${event.eventName}`}
+            >
+            Delete
+            </button>
           </li>
         ))}
       </ul>
