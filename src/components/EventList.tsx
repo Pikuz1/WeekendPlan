@@ -71,7 +71,7 @@ const EventList: React.FC<EventListProps> = ({ onSelectEvent }) => {
               </span>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 truncate">
-                Created by: {event.members?.[event.createdBy]?.name || "Unknown"}
+                I will bring: {event.members?.[event.createdBy]?.dish || "Unknown"}
             </p>
             <button
                 onClick={(e) => {
