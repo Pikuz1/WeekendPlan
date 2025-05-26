@@ -1,36 +1,22 @@
-import { useEffect, useState } from "react";
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  type User,
-  setPersistence,
-  browserLocalPersistence,
-} from "firebase/auth";
-import { auth } from "../firebase";
+import React, { useState } from "react";
 
-const Auth = () => {
-  const [user, setUser] = useState<User | null>(null);
+type AuthProps = {
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
+  loading?: boolean;
+  error?: string | null;
+};
+
+const Auth: React.FC<AuthProps> = ({ login, register }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    setPersistence(auth, browserLocalPersistence).catch(console.error);
-
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
   const handleLogin = async () => {
     setError(null);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await login(email, password);
     } catch (err: any) {
       setError(err.message);
     }
@@ -39,33 +25,11 @@ const Auth = () => {
   const handleRegister = async () => {
     setError(null);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      await register(email, password);
     } catch (err: any) {
       setError(err.message);
     }
   };
-
-  const logout = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error("Sign-out error:", error);
-    }
-  };
-
-  if (user) {
-    return (
-      <div className="p-4 bg-white shadow rounded w-fit">
-        <p className="mb-2">Welcome, {user.email}</p>
-        <button
-          onClick={logout}
-          className="bg-red-500 px-3 py-1 rounded text-white"
-        >
-          Logout
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="p-4 bg-white shadow rounded w-fit max-w-sm">
