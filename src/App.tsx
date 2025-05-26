@@ -5,6 +5,7 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   signOut,
+  signInWithRedirect,
 } from "firebase/auth";
 import { auth } from "./firebase";
 import CreateEventForm from "./components/CreateEventForm";
@@ -22,7 +23,11 @@ const App: React.FC = () => {
 
   const handleLogin = async () => {
     const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    try {
+      await signInWithRedirect(auth, provider);
+    } catch (error) {
+      console.error("Redirect login failed:", error);
+    }
   };
 
   const handleLogout = async () => {
