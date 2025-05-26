@@ -7,21 +7,32 @@ type Props = {
 };
 
 const CalendarView = ({ onDateSelect }: Props) => {
-  // Allow date to be null as react-calendar might send null sometimes
   const [date, setDate] = useState<Date | null>(new Date());
 
   const handleChange: CalendarProps["onChange"] = (value) => {
-    if (Array.isArray(value)) return; // ignore range for now
-    if (value === null) return; // ignore null
+    if (Array.isArray(value) || value === null) return;
     setDate(value);
     onDateSelect(value);
   };
 
   return (
-    <div className="flex flex-col items-center">
-      <h2 className="text-lg font-semibold mb-2">Select a Date</h2>
-      <div className="bg-white text-black p-4 rounded-lg shadow-lg">
-        <Calendar onChange={handleChange} value={date} />
+    <div className="flex flex-col items-center p-4">
+      <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Select Event Date</h2>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 w-full max-w-md">
+        <Calendar
+          onChange={handleChange}
+          value={date}
+          calendarType="ISO 8601"
+          className="custom-calendar border-0"
+          minDetail="month"
+          next2Label={null}
+          prev2Label={null}
+          navigationLabel={({ date }) => (
+            <span className="text-gray-800 dark:text-gray-200 font-semibold">
+              {date.toLocaleString('default', { month: 'long', year: 'numeric' })}
+            </span>
+          )}
+        />
       </div>
     </div>
   );

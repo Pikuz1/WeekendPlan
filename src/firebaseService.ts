@@ -5,21 +5,33 @@ import {
   addDoc,
   doc,
   updateDoc,
-  onSnapshot} from "firebase/firestore";
-import type { EventData } from "./types";
+  onSnapshot,
+  serverTimestamp,
+} from "firebase/firestore";
+import type { EventData } from "./firebase";
 
 const eventsCollection = collection(db, "events");
 
 // Create new event
 export const createEvent = async (event: Omit<EventData, "id">) => {
-  const docRef = await addDoc(eventsCollection, event);
+  const docRef = await addDoc(eventsCollection, {
+    ...event,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
   return docRef.id;
 };
 
-// Update existing event (members or date)
-export const updateEvent = async (eventId: string, data: Partial<EventData>) => {
+// Update existing event (members or date or note, etc.)
+export const updateEvent = async (
+  eventId: string,
+  data: Partial<EventData>
+) => {
   const eventDoc = doc(db, "events", eventId);
-  await updateDoc(eventDoc, data);
+  await updateDoc(eventDoc, {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
 };
 
 // Get single event snapshot listener (real-time updates)

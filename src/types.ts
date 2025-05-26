@@ -1,13 +1,21 @@
-export interface Member {
-    uid: string;
-    name: string;
-    dish: string;
-  }
-  
-  export interface EventData {
-    id?: string; // Firestore doc id
-    date: string; // ISO date string (e.g., '2025-06-10')
-    createdBy: string; // uid of creator
-    members: Record<string, Member>; // key = member uid
-  }
-  
+// src/types.ts
+
+export interface MemberData {
+  uid: string;
+  name: string;
+  dish: string[];       // array of dishes
+  note: string;
+  isAttending: boolean;
+}
+
+export interface EventData {
+  id?: string;          // optional, since omitted when creating event
+  date: string;         // ISO date string, e.g. "2025-05-26"
+  createdBy: string;    // userUid of the event creator
+  eventName: string;
+  members: {
+    [uid: string]: MemberData;
+  };
+  createdAt: string;    // timestamp string, filled by serverTimestamp
+  updatedAt: string;    // timestamp string, filled by serverTimestamp
+}
