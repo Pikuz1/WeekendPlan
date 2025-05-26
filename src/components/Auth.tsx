@@ -1,24 +1,47 @@
 import { useEffect, useState } from "react";
 import {
-  signInWithRedirect,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  getRedirectResult,
   type User,
   setPersistence,
-  browserLocalPersistence
+  browserLocalPersistence,
 } from "firebase/auth";
-import { auth, provider } from "../firebase";
+import { auth } from "../firebase";
 
 const Auth = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const signIn = async () => {
+  useEffect(() => {
+    setPersistence(auth, browserLocalPersistence).catch(console.error);
+
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogin = async () => {
+    setError(null);
     try {
-      await setPersistence(auth, browserLocalPersistence);
-      await signInWithRedirect(auth, provider);
-    } catch (error) {
-      console.error("Redirect sign-in error:", error);
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const handleRegister = async () => {
+    setError(null);
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+    } catch (err: any) {
+      setError(err.message);
     }
   };
 
@@ -30,46 +53,64 @@ const Auth = () => {
     }
   };
 
-  useEffect(() => {
-    // Handles user state changes
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-
-    // Handles result after redirect (if any)
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result?.user) {
-          setUser(result.user);
-        }
-      })
-      .catch((error) => {
-        console.error("Redirect result error:", error);
-      });
-
-    return () => unsubscribe();
-  }, []);
+  if (user) {
+    return (
+      <div className="p-4 bg-white shadow rounded w-fit">
+        <p className="mb-2">Welcome, {user.email}</p>
+        <button
+          onClick={logout}
+          className="bg-red-500 px-3 py-1 rounded text-white"
+        >
+          Logout
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-4 bg-white shadow rounded w-fit">
-      {user ? (
-        <div>
-          <p className="mb-2">Welcome, {user.displayName}</p>
-          <button
-            onClick={logout}
-            className="bg-red-500 px-3 py-1 rounded text-white"
-          >
-            Logout
-          </button>
-        </div>
+    <div className="p-4 bg-white shadow rounded w-fit max-w-sm">
+      <h2 className="text-xl mb-4">{isRegistering ? "Register" : "Login"}</h2>
+      <input
+        type="email"
+        placeholder="Email"
+        className="w-full mb-2 p-2 border rounded"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        className="w-full mb-2 p-2 border rounded"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      {error && <p className="text-red-600 mb-2">{error}</p>}
+
+      {isRegistering ? (
+        <button
+          onClick={handleRegister}
+          className="w-full bg-green-600 text-white py-2 rounded"
+        >
+          Register
+        </button>
       ) : (
         <button
-          onClick={signIn}
-          className="bg-green-600 px-3 py-1 rounded text-white"
+          onClick={handleLogin}
+          className="w-full bg-blue-600 text-white py-2 rounded"
         >
-          Sign in with Google
+          Login
         </button>
       )}
+
+      <p className="mt-4 text-center text-sm text-gray-600">
+        {isRegistering ? "Already have an account?" : "Don't have an account?"}{" "}
+        <button
+          onClick={() => setIsRegistering(!isRegistering)}
+          className="text-blue-600 underline"
+        >
+          {isRegistering ? "Login" : "Register"}
+        </button>
+      </p>
     </div>
   );
 };

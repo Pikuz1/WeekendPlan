@@ -1,38 +1,63 @@
-// src/App.tsx
 import React, { useEffect, useState } from "react";
 import {
   onAuthStateChanged,
-  GoogleAuthProvider,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut,
-  signInWithRedirect,
+  setPersistence,
+  browserLocalPersistence,
+  type User,
 } from "firebase/auth";
 import { auth } from "./firebase";
+import Auth from "./components/Auth";
 import CreateEventForm from "./components/CreateEventForm";
 import EventDetail from "./components/EventDetail";
 import EventList from "./components/EventList";
 
 const App: React.FC = () => {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [eventId, setEventId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => setUser(u));
+    setPersistence(auth, browserLocalPersistence).catch(console.error);
+
+    const unsubscribe = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      setLoading(false);
+    });
+
     return () => unsubscribe();
   }, []);
 
-  const handleLogin = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithRedirect(auth, provider);
-    } catch (error) {
-      console.error("Redirect login failed:", error);
-    }
+  const login = async (email: string, password: string) => {
+    await signInWithEmailAndPassword(auth, email, password);
   };
 
-  const handleLogout = async () => {
+  const register = async (email: string, password: string) => {
+    await createUserWithEmailAndPassword(auth, email, password);
+  };
+
+  const logout = async () => {
     await signOut(auth);
     setEventId(null);
   };
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (!user) {
+    // Show login/register form and pass functions
+    return (
+      <Auth
+        login={login}
+        register={register}
+        loading={loading}
+        error={null}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -42,47 +67,24 @@ const App: React.FC = () => {
             WeekendPlan
           </h1>
 
-          {!user ? (
+          <div className="space-y-4">
+            {user.photoURL && (
+              <img
+                src={user.photoURL}
+                alt="Profile"
+                className="w-10 h-10 rounded-full"
+              />
+            )}
+            <p className="font-medium text-gray-700 dark:text-gray-200">
+              {user.email}
+            </p>
             <button
-              onClick={handleLogin}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center"
+              onClick={logout}
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
             >
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M12.545 10.239v3.821h5.445c-.712 2.315-2.647 3.972-5.445 3.972-3.332 0-6.033-2.701-6.033-6.032s2.701-6.032 6.033-6.032c1.498 0 2.866.549 3.921 1.453l2.814-2.814C17.503 2.332 15.139 1 12.545 1 7.021 1 2.545 5.477 2.545 11s4.476 10 10 10c8.396 0 10-7.496 10-10 0-.671-.069-1.369-.156-2.045H12.545z" />
-              </svg>
-              Login with Google
+              Logout
             </button>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex items-center space-x-4">
-                {user.photoURL && (
-                  <img
-                    src={user.photoURL}
-                    alt="Profile"
-                    className="w-10 h-10 rounded-full"
-                  />
-                )}
-                <div>
-                  <p className="font-medium text-gray-700 dark:text-gray-200">
-                    {user.displayName}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {user.email}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
-              >
-                Logout
-              </button>
-            </div>
-          )}
+          </div>
         </div>
 
         {user && !eventId && (
@@ -92,7 +94,7 @@ const App: React.FC = () => {
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden p-6 mt-6">
               <CreateEventForm
                 userUid={user.uid}
-                userName={user.displayName || "Anonymous"}
+                userName={user.email || "Anonymous"}
                 onCreated={(id) => setEventId(id)}
               />
             </div>
@@ -104,7 +106,7 @@ const App: React.FC = () => {
             <EventDetail
               eventId={eventId}
               currentUserUid={user.uid}
-              currentUserName={user.displayName || "Anonymous"}
+              currentUserName={user.email || "Anonymous"}
             />
             <button
               onClick={() => setEventId(null)}
