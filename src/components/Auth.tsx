@@ -4,7 +4,9 @@ import {
   signOut,
   onAuthStateChanged,
   getRedirectResult,
-  type User
+  type User,
+  setPersistence,
+  browserLocalPersistence
 } from "firebase/auth";
 import { auth, provider } from "../firebase";
 
@@ -13,6 +15,7 @@ const Auth = () => {
 
   const signIn = async () => {
     try {
+      await setPersistence(auth, browserLocalPersistence);
       await signInWithRedirect(auth, provider);
     } catch (error) {
       console.error("Redirect sign-in error:", error);
