@@ -1,4 +1,3 @@
-// src/firebaseService.ts
 import { db } from "./firebase";
 import {
   collection,
@@ -7,13 +6,18 @@ import {
   updateDoc,
   onSnapshot,
   serverTimestamp,
+  query,
+  where,
+  orderBy,
+  limit,
+  getDocs,
 } from "firebase/firestore";
 import type { EventData } from "./firebase";
 
 const eventsCollection = collection(db, "events");
 
-// Create new event
-export const createEvent = async (event: Omit<EventData, "id">) => {
+// Create new event - make sure to include creatorUid
+export const createEvent = async (event: Omit<EventData, "id"> & { creatorUid: string }) => {
   const docRef = await addDoc(eventsCollection, {
     ...event,
     createdAt: serverTimestamp(),
@@ -47,4 +51,22 @@ export const listenEvent = (
       callback(null);
     }
   });
+};
+
+// Fetch latest event ID created by a specific user
+export const fetchUserLatestEventId = async (creatorUid: string): Promise<string | null> => {
+  const q = query(
+    eventsCollection,
+    where("creatorUid", "==", creatorUid),
+    orderBy("createdAt", "desc"),
+    limit(1)
+  );
+
+  const querySnapshot = await getDocs(q);
+  if (querySnapshot.empty) {
+    return null;
+  }
+
+  const docSnap = querySnapshot.docs[0];
+  return docSnap.id;
 };

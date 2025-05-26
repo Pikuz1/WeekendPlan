@@ -1,4 +1,3 @@
-// src/components/CreateEventForm.tsx
 import React, { useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
@@ -22,9 +21,10 @@ const CreateEventForm: React.FC<Props> = ({ userUid, userName, onCreated }) => {
       return;
     }
 
-    const eventData: Omit<EventData, "id"> = {
+    const eventData: Omit<EventData, "id"> & { creatorUid: string } = {
       date: date.toISOString().split("T")[0],
       createdBy: userUid,
+      creatorUid: userUid,  // <-- Add this line
       eventName,
       members: {
         [userUid]: {

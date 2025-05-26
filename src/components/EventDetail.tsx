@@ -18,13 +18,20 @@ const EventDetail: React.FC<Props> = ({ eventId, currentUserUid, currentUserName
   useEffect(() => {
     const unsubscribe = listenEvent(eventId, (data) => {
       setEvent(data);
+
       if (data?.members?.[currentUserUid]) {
         const member = data.members[currentUserUid];
         setUserDish(member.dish?.join(", ") || "");
         setUserNote(member.note || "");
         setIsAttending(member.isAttending ?? true);
+      } else {
+        // Reset fields if user is not in members yet
+        setUserDish("");
+        setUserNote("");
+        setIsAttending(true);
       }
     });
+
     return () => unsubscribe();
   }, [eventId, currentUserUid]);
 
@@ -50,7 +57,7 @@ const EventDetail: React.FC<Props> = ({ eventId, currentUserUid, currentUserName
       [currentUserUid]: {
         uid: currentUserUid,
         name: currentUserName,
-        dish: userDish.split(",").map((d) => d.trim()).filter(Boolean), // fixed property name: dish (not dishes)
+        dish: userDish.split(",").map((d) => d.trim()).filter(Boolean),
         note: userNote,
         isAttending,
       },

@@ -1,4 +1,6 @@
 // src/types.ts
+import type { Timestamp } from "firebase/firestore";
+
 
 export interface MemberData {
   uid: string;
@@ -16,6 +18,6 @@ export interface EventData {
   members: {
     [uid: string]: MemberData;
   };
-  createdAt: string;    // timestamp string, filled by serverTimestamp
-  updatedAt: string;    // timestamp string, filled by serverTimestamp
+  createdAt: string | Timestamp;
+  updatedAt: string | Timestamp;
 }
